@@ -124,13 +124,12 @@ router.post("/send-mail", async (req, res) => {
       to: email,
       subject: `Selection Letter - ${name}`,
       text: `Dear ${name},\n\nPlease find your Selection Letter attached.`,
-      attachments: [
-        {
-          filename: `${name}_Letter.pdf`,
-          path: pdfData
-        }
-      ]
-    });
+      attachments: [{
+  filename: `${name}_Letter.pdf`,
+  content: pdfData.split("base64,")[1],
+  encoding: "base64"
+}]
+
 
     await new Log({
       action: "EMAIL_SENT",
