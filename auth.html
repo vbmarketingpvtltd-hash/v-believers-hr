@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>V Believers - Auth</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; }
+        h2 { text-align: center; color: #1a4cff; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        button { width: 100%; padding: 12px; background: #1a4cff; color: white; border: none; cursor: pointer; border-radius: 6px; font-size: 16px; font-weight: bold; margin-top: 10px; }
+        button:hover { background: #0033cc; }
+        .links-container { display: flex; justify-content: space-between; margin-top: 15px; }
+        .toggle { font-size: 12px; color: #555; cursor: pointer; text-decoration: underline; }
+        .toggle:hover { color: #1a4cff; }
+        #backLink { display: none; text-align: center; margin-top: 15px; font-size: 13px; color: blue; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2 id="title">HR Login</h2>
+        
+        <input type="text" id="user" placeholder="Username">
+        <input type="password" id="pass" placeholder="Password">
+        
+        <input type="password" id="recovery" placeholder="Enter Master Recovery Key" style="display:none; border: 2px solid #ff4d4d;">
+        
+        <button id="mainBtn" onclick="handleAuth()">Login</button>
+
+        <div class="links-container" id="normalLinks" style="margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 15px;">
+            <span class="toggle" onclick="setMode('register')" style="color: #666;">New? Create Account</span>
+            <span class="toggle" onclick="setMode('forgot')" style="color: #d9534f; font-weight: bold; text-decoration: none; border: 1px solid #d9534f; padding: 2px 8px; border-radius: 4px;">Help! Forgot Password</span>
+        </div>
+        
+        <div id="backLink" onclick="setMode('login')">← Back to Login</div>
+    </div>
+
+    <script>
+    // Just "/api" is enough because netlify.toml handles the rest
+    const API_URL = "/api"; 
+
+    let mode = 'login'; 
+
+    function setMode(newMode) {
+        mode = newMode;
+        const title = document.getElementById("title");
+        const btn = document.getElementById("mainBtn");
+        const recoveryInput = document.getElementById("recovery");
+        const passInput = document.getElementById("pass");
+        const normalLinks = document.getElementById("normalLinks");
+        const backLink = document.getElementById("backLink");
+
+        // Reset UI
+        recoveryInput.style.display = "none";
+        passInput.style.display = "block";
+        normalLinks.style.display = "flex";
+        backLink.style.display = "none";
+        passInput.placeholder = "Password";
+
+        if (mode === 'register') {
+            title.innerText = "New Account";
+            btn.innerText = "Create Account";
+        } else if (mode === 'forgot') {
+            title.innerText = "Reset Password";
+            btn.innerText = "Update Password";
+            passInput.placeholder = "Enter New Password";
+            recoveryInput.style.display = "block"; 
+            normalLinks.style.display = "none";
+            backLink.style.display = "block";
+        } else {
+            title.innerText = "HR Login";
+            btn.innerText = "Login";
+        }
+    }
+
+    async function handleAuth() {
+        const username = document.getElementById("user").value;
+        const password = document.getElementById("pass").value;
+        const recoveryKey = document.getElementById("recovery").value;
+
+        if (!username || !password) {
+            alert("Please fill in all fields");
+            return;
+        }
+
+        // CORRECTED: Removed the extra "/api" from the endpoints
+        let endpoint = `${API_URL}/auth/login`;
+        let payload = { username, password };
+
+        if (mode === 'register') {
+            endpoint = `${API_URL}/auth/register`;
+        } else if (mode === 'forgot') {
+            if (!recoveryKey) { alert("Master Key is required!"); return; }
+            endpoint = `${API_URL}/auth/reset-password`;
+            payload = { username, recoveryKey, newPassword: password };
+        }
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                if (mode === 'login') {
+                    localStorage.setItem("isLoggedIn", "true");
+                    window.location.href = "index.html";
+                } else {
+                    alert(result.message || "Success!");
+                    setMode('login'); 
+                }
+            } else {
+                alert(result.error || "Action failed. Check credentials.");
+            }
+        } catch (err) {
+            console.error(err);
+            // UPDATED ERROR MESSAGE
+            alert("Connection Error. Please check your Netlify Function logs.");
+        }
+    }
+</script>
+</body>
+
+</html>
+

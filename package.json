@@ -1,0 +1,20 @@
+{
+  "name": "v-believers-hr",
+  "version": "1.0.0",
+  "description": "HR Management System for V Believers",
+  "main": "netlify/functions/api.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "Mahi",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "mongoose": "^7.0.0",
+    "nodemailer": "^6.9.1",
+    "serverless-http": "^3.2.0"
+  }
+}
