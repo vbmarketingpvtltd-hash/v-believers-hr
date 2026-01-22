@@ -7,11 +7,25 @@
 
 <style>
 body{ margin:0; padding:0; background:#dcdcdc; font-family:"Times New Roman", serif; }
-.letter{ width:210mm; height:297mm; margin:15mm auto; background:#e6e3d9; position:relative; box-sizing:border-box; padding:18mm; }
+
+/* A4 Sheet Layout */
+.letter{
+  width:210mm; height:297mm; margin:15mm auto; background:#e6e3d9; 
+  position:relative; box-sizing:border-box; padding:18mm;
+}
+
+/* INNER PAGE BORDER */
 .inner-border{ position:absolute; top:14mm; left:14mm; right:14mm; bottom:14mm; pointer-events:none; }
-.inner-border::before{ content:""; position:absolute; inset:0; border:2px solid #000; }
-.inner-border::after{ content:""; position:absolute; inset:2mm; border:1.5px solid #000; }
-.watermark{ position:absolute; inset:0; top:10%; bottom:30%; background:url("watermark.png") center no-repeat; background-size:520px; opacity:0.20; z-index:1; }
+.inner-border::before{ content:""; position:absolute; top:0; left:0; right:0; bottom:0; border:2px solid #000; }
+.inner-border::after{ content:""; position:absolute; top:2mm; left:2mm; right:2mm; bottom:2mm; border:1.5px solid #000; }
+
+/* WATERMARK */
+.watermark{
+  position:absolute; inset:0; top:10%; bottom:30%; 
+  background:url("watermark.png") center center no-repeat;
+  background-size:520px; opacity:0.20; z-index:1;
+}
+
 .email-btn{ position:fixed; top:60px; right:15px; padding:10px 18px; background:#1a4cff; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:14px; z-index:100; }
 .print-btn{ position:fixed; top:15px; right:15px; padding:10px 18px; background:#000; color:#fff; border:none; border-radius:6px; cursor:pointer; font-size:14px; z-index:100; }
 
@@ -23,7 +37,7 @@ body{ margin:0; padding:0; background:#dcdcdc; font-family:"Times New Roman", se
 }
 
 .content{ position:relative; z-index:2; font-size:16px; line-height:1.7; }
-h1{ text-align:center; font-size:28px; text-decoration:underline; margin-bottom:10px; }
+h1{ text-align:center; font-size:28px; letter-spacing:1.5px; text-decoration:underline; margin:0 0 10px 0; }
 .heading{ font-weight:bold; text-decoration:underline; margin-top:10px; }
 p{ margin:6px 0 6px 8px; text-align:justify; }
 .footer{ margin-top:50px; text-align:right; }
@@ -48,94 +62,124 @@ p{ margin:6px 0 6px 8px; text-align:justify; }
 
     <div class="heading">TO:</div>
     <p>
-      <b><span id="name"></span></b><br>
-      <span id="district"></span><br>
-      Ph No: <span id="phone"></span><br>
-      Register No: <span id="regNo"></span>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b><span id="name"></span></b><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span id="district"></span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ph No: <span id="phone"></span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Register No: <span id="regNo"></span>
     </p>
 
     <div class="heading">RESPECTED SIR / MADAM,</div>
     <p>
-      This is to inform you that the documents submitted by you have been verified.
-      You are selected for <strong>Training and Interview</strong> at
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This is to inform you that the documents submitted by you for work purposes
+      have been successfully verified. Based on the verification, you have been
+      selected for <strong>Training and Interview</strong> at
       <strong>V Believers Marketing Pvt Ltd</strong>.
+    </p>
+
+    <p>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Your dedication and commitment are highly appreciated. We believe your
+      professional skills will add strategic value to our organization.
     </p>
 
     <div class="heading">Training Details</div>
     <p>
-      Training Start Date: <span id="circleDate"></span><br>
-      Reporting Time: 9:30 AM onwards
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Training Start Date: <span id="circleDate"></span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Reporting Time: 9:30 AM onwards<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;<b><u>Note:</u> Please verify your documents before the training day and if you want food & accommodation you need to take membership.</b>
+    </p>
+
+    <div class="heading">Documents to be Submitted (Xerox copies only)</div>
+    <p>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Aadhar Card<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• PAN Card<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Education Certificates<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Bank Passbook<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;• Two Passport Size Photos
+    </p>
+
+    <div class="heading">Training Location</div>
+    <p>
+      <a id="mapLink" class="map-link" target="_blank">View on Google Maps</a>
     </p>
 
     <div class="footer">
+      Kindly ensure timely reporting with all required documents.<br><br>
       Warm Regards,<br>
       <strong>HR Department</strong><br>
-      V Believers Marketing Pvt Ltd
+      V Believers Marketing Pvt Ltd<br>
+      7075110436
     </div>
   </div>
 </div>
 
 <script>
-window.onload = function () {
-  const dataStr = localStorage.getItem("letterData");
-  if (!dataStr) return;
-
-  const data = JSON.parse(dataStr);
-  document.getElementById("regNo").textContent = data.regNo || "";
-  document.getElementById("name").textContent = data.name || "";
-  document.getElementById("district").textContent = data.district || "";
-  document.getElementById("phone").textContent = data.phone || "";
-  document.getElementById("circleDate").textContent = data.circleDate || "";
-  document.getElementById("docTitle").textContent = `${data.name} - Selection Letter`;
-  window.currentEmail = data.email;
+// 1. Load data automatically when the page opens
+window.onload = function() {
+    const dataStr = localStorage.getItem("letterData");
+    if (dataStr) {
+        const data = JSON.parse(dataStr);
+        document.getElementById("regNo").textContent = data.regNo || "";
+        document.getElementById("name").textContent = data.name || "Applicant Name";
+        document.getElementById("docTitle").textContent = `${data.name} - Selection Letter`;
+        document.getElementById("district").textContent = data.district || "District";
+        document.getElementById("phone").textContent = data.phone || "Phone Number";
+        document.getElementById("circleDate").textContent = data.circleDate || "DD/MM/YYYY";
+        window.currentEmail = data.email;
+    }
 };
 
+// 2. Generate PDF and Send via API
 async function sendEmail() {
-  const btn = document.querySelector(".email-btn");
-
-  if (!window.currentEmail) {
-    alert("❌ No email found.");
-    return;
-  }
-
-  btn.innerText = "⏳ Sending...";
-  btn.disabled = true;
-
-  try {
-    const { jsPDF } = window.jspdf;
-    const canvas = await html2canvas(document.querySelector(".letter"), { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-
-    const pdf = new jsPDF("p", "mm", "a4");
-    pdf.addImage(imgData, "PNG", 0, 0, 210, 297);
-    const pdfBase64 = pdf.output("datauristring");
-
-    const response = await fetch("/api/send-mail", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: window.currentEmail,
-        name: document.getElementById("name").innerText,
-        pdfData: pdfBase64
-      })
-    });
-
-    if (!response.ok) {
-      const text = await response.text();   // ✅ SAFE
-      alert("❌ Failed: " + (text || "Server error"));
-      return;
+    const btn = document.querySelector(".email-btn");
+    
+    if (!window.currentEmail) {
+        alert("❌ Error: No email found for this applicant.");
+        return;
     }
 
-    const data = await response.json();
-    alert("✅ " + data.message);
+    btn.innerText = "⏳ Generating PDF...";
+    btn.disabled = true;
 
-  } catch (err) {
-    console.error(err);
-    alert("❌ Could not connect to server");
-  } finally {
-    btn.innerText = "✉ Send PDF via Email";
-    btn.disabled = false;
-  }
+    try {
+        const { jsPDF } = window.jspdf;
+        const element = document.querySelector(".letter");
+
+        const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+        const imgData = canvas.toDataURL('image/png');
+
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+        const pdfBase64 = pdf.output('datauristring');
+
+        const name = document.getElementById("name").innerText;
+        
+        const response = await fetch('/api/send-mail', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: window.currentEmail,
+                name: name,
+                pdfData: pdfBase64
+            })
+        });
+
+        if (response.ok) {
+            alert("✅ Success! Letter sent to " + window.currentEmail);
+        } else {
+            let msg = "Check server logs";
+            try {
+                const errorData = await response.json();
+                msg = errorData.error || msg;
+            } catch (e) {}
+            alert("❌ Failed: " + msg);
+        }
+    } catch (err) {
+        console.error(err);
+        alert("❌ Error: Could not connect to the server.");
+    } finally {
+        btn.innerText = "✉ Send PDF via Email";
+        btn.disabled = false;
+    }
 }
 </script>
 
