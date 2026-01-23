@@ -116,7 +116,24 @@ router.post("/send-mail", async (req, res) => {
       from: '"V Believers HR" <pallemaheshreddy200@gmail.com>',
       to: email,
       subject: `Selection Letter - ${name}`,
-      text: `Dear ${name},\n\nAttached is your selection letter.`,
+      text: `Dear ${name},
+
+Congratulations!
+
+Respected Sir/Madam,
+
+We are pleased to inform you that you have been selected at **V Believers Marketing Private Limited.
+
+Please find attached the detailed Selection Letter in PDF format, which includes all terms and conditions of your appointment along with other important information.
+
+You are requested to carefully read the attached document and confirm your acceptance by replying to this email.
+
+We welcome you to the V Believers family and look forward to a long and successful professional association.
+
+
+Warm Regards,
+HR Department
+V Believers Marketing Pvt Ltd.`,
       attachments: [{
         filename: `${name}_Selection_Letter.pdf`,
         content: pdfData.split("base64,")[1],
