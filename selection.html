@@ -151,10 +151,10 @@ async function sendEmail() {
         const element = document.querySelector(".letter");
 
         const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-        const imgData = canvas.toDataURL('image/png',0.7);
+        const imgData = canvas.toDataURL('image/jpeg',0.7);
 
         const pdf = new jsPDF('p', 'mm', 'a4');
-        pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+        pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
         const pdfBase64 = pdf.output('datauristring');
 
         const name = document.getElementById("name").innerText;
@@ -191,5 +191,6 @@ async function sendEmail() {
 
 </body>
 </html>
+
 
 
