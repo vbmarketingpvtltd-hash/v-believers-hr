@@ -115,17 +115,23 @@ p{ margin:6px 0 6px 8px; text-align:justify; }
 <script>
 // 1. Load data automatically when the page opens
 window.onload = function() {
-    const dataStr = localStorage.getItem("letterData");
-    if (dataStr) {
-        const data = JSON.parse(dataStr);
-        document.getElementById("regNo").textContent = data.regNo || "";
-        document.getElementById("name").textContent = data.name || "Applicant Name";
-        document.getElementById("docTitle").textContent = `${data.name} - Selection Letter`;
-        document.getElementById("district").textContent = data.district || "District";
-        document.getElementById("phone").textContent = data.phone || "Phone Number";
-        document.getElementById("circleDate").textContent = data.circleDate || "DD/MM/YYYY";
-        window.currentEmail = data.email;
+    let data = {};
+    try {
+        const dataStr = localStorage.getItem("letterData");
+        if (dataStr) {
+            data = JSON.parse(dataStr);
+        }
+    } catch (e) {
+        console.error("Invalid letterData in localStorage", e);
     }
+
+    document.getElementById("regNo").textContent = data.regNo || "";
+    document.getElementById("name").textContent = data.name || "Applicant Name";
+    document.getElementById("docTitle").textContent = (data.name || "Applicant") + " - Selection Letter";
+    document.getElementById("district").textContent = data.district || "District";
+    document.getElementById("phone").textContent = data.phone || "Phone Number";
+    document.getElementById("circleDate").textContent = data.circleDate || "DD/MM/YYYY";
+    window.currentEmail = data.email || null;
 };
 
 // 2. Generate PDF and Send via API
@@ -185,3 +191,4 @@ async function sendEmail() {
 
 </body>
 </html>
+
