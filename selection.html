@@ -158,16 +158,23 @@ async function sendEmail() {
         const pdfBase64 = pdf.output('datauristring');
 
         const name = document.getElementById("name").innerText;
-        
+        // Get letter content as HTML for email body
+        const letterHTML = document.querySelector(".content").innerHTML;
+
         const response = await fetch('/api/send-mail', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                email: window.currentEmail,
-                name: name,
-                pdfData: pdfBase64
-            })
-        });
+    email: window.currentEmail,
+    name: name,
+    pdfData: pdfBase64,
+    letterHTML: `
+        <div style="font-family: Times New Roman, serif; line-height:1.6;">
+            ${letterHTML}
+        </div>
+    `
+})
+
 
         if (response.ok) {
             alert("✅ Success! Letter sent to " + window.currentEmail);
@@ -191,6 +198,7 @@ async function sendEmail() {
 
 </body>
 </html>
+
 
 
 
