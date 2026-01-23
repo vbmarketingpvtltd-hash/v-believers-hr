@@ -10,6 +10,7 @@ const router = express.Router();
 app.use(express.json({ limit: "50mb" }));
 app.use(cors());
 
+/* ================= DATABASE ================= */
 const mongoURI = "mongodb+srv://mahesh_21:teI4gVKu0Vnzqy2y@cluster0.gnikcjh.mongodb.net/vbelievers?retryWrites=true&w=majority&appName=Cluster0";
 
 const connectToDatabase = async () => {
@@ -17,7 +18,7 @@ const connectToDatabase = async () => {
   await mongoose.connect(mongoURI, { serverSelectionTimeoutMS: 5000 });
 };
 
-// ===== Schemas =====
+/* ================= SCHEMAS ================= */
 const appSchema = new mongoose.Schema({
   regNo: String, name: String, fatherName: String, dob: String,
   qualification: String, circleDate: String, gender: String,
@@ -39,7 +40,7 @@ const logSchema = new mongoose.Schema({
 });
 const Log = mongoose.models.Log || mongoose.model("Log", logSchema);
 
-// ===== Mail =====
+/* ================= MAIL ================= */
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
@@ -47,7 +48,7 @@ const transporter = nodemailer.createTransport({
   auth: { user: "pallemaheshreddy200@gmail.com", pass: "ybdt bvjm ykpg ocai" }
 });
 
-// ===== AUTH =====
+/* ================= AUTH ================= */
 router.post("/auth/register", async (req, res) => {
   try {
     await User.create(req.body);
@@ -62,33 +63,55 @@ router.post("/auth/login", async (req, res) => {
   user ? res.json({ success: true }) : res.status(401).json({ error: "Invalid login" });
 });
 
-// ===== APPLICATIONS =====
+/* ================= APPLICATION ROUTES ================= */
+
+// Duplicate check
+router.get("/check-duplicate/:regNo", async (req, res) => {
+  const existing = await Application.findOne({ regNo: req.params.regNo, isDeleted: false });
+  res.json({ exists: !!existing, name: existing ? existing.name : null });
+});
+
+// Get applications (active or bin)
 router.get("/applications", async (req, res) => {
-  const apps = await Application.find({ isDeleted: false }).sort({ regNo: 1 });
+  const isBin = req.query.bin === "true";
+  const apps = await Application.find({ isDeleted: isBin }).sort({ regNo: 1 });
   res.json(apps);
 });
 
+// Save or update application
 router.post("/applications", async (req, res) => {
   const { id, ...data } = req.body;
-  if (id) await Application.findByIdAndUpdate(id, data);
-  else await Application.create(data);
-  res.json({ message: "Saved" });
+
+  if (id && mongoose.Types.ObjectId.isValid(id)) {
+    await Application.findByIdAndUpdate(id, data);
+    res.json({ message: "Updated" });
+  } else {
+    await Application.create(data);
+    res.json({ message: "Saved" });
+  }
 });
 
+// Move to bin
 router.delete("/applications/:id", async (req, res) => {
   await Application.findByIdAndUpdate(req.params.id, { isDeleted: true });
   res.json({ message: "Deleted" });
 });
 
+// Restore from bin
 router.post("/applications/restore/:id", async (req, res) => {
   await Application.findByIdAndUpdate(req.params.id, { isDeleted: false });
   res.json({ message: "Restored" });
 });
 
-// ===== EMAIL =====
+/* ================= EMAIL ================= */
 router.post("/send-mail", async (req, res) => {
   try {
     const { email, name, pdfData } = req.body;
+
+    if (!email || !pdfData) {
+      return res.status(400).json({ error: "Missing email or PDF data" });
+    }
+
     await transporter.sendMail({
       from: '"V Believers HR" <pallemaheshreddy200@gmail.com>',
       to: email,
@@ -102,14 +125,16 @@ router.post("/send-mail", async (req, res) => {
     });
 
     await Log.create({ action: "EMAIL_SENT", details: email });
-    res.json({ message: "Email sent" });
+
+    res.json({ message: "Email sent successfully" });
 
   } catch (err) {
-    console.error(err);
-    res.status(400).json({ error: "Mail failed" });
+    console.error("MAIL ERROR:", err);
+    res.status(400).json({ error: err.message });
   }
 });
 
+/* ================= EXPORT ================= */
 app.use("/api", router);
 
 module.exports.handler = async (event, context) => {
